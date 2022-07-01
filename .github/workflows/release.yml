@@ -109,6 +109,7 @@ jobs:
           EOF
           )
   validate-package-cr:
+    needs: draft-release
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
