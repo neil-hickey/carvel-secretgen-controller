@@ -44,7 +44,7 @@ jobs:
         uses: softprops/action-gh-release@17cd0d34deddf848fc0e7d9be5202c148c270a0a
         with:
           name: ${{ github.ref_name }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.TOKEN }}
           body_path: ./tmp/checksums.txt
           files: |
             ./tmp/release.yml
