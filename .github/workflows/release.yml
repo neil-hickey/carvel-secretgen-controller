@@ -142,6 +142,8 @@ jobs:
           # deploy admin sa for secretgen-controller
           kapp deploy -a rbac -f https://raw.githubusercontent.com/vmware-tanzu/carvel-kapp-controller/develop/examples/rbac/cluster-admin.yml -y
 
+          kapp deploy -a kc -f -f https://github.com/vmware-tanzu/carvel-kapp-controller/releases/latest/download/release.yml
+
           cat << EOF > pkgi.yml
           ---
           apiVersion: packaging.carvel.dev/v1alpha1
