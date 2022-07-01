@@ -168,4 +168,4 @@ jobs:
 
           export SECRETGEN_E2E_NAMESPACE=secretgen-test
 
-          ./hack/test-all.sh
+          ./hack/test-e2e.sh
