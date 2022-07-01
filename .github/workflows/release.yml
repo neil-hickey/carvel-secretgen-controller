@@ -129,6 +129,12 @@ jobs:
           kapp: v0.47.0
           kbld: v0.33.0
           imgpkg: v0.29.0
+      - uses: dsaltares/fetch-gh-release-asset@master
+        with:
+          version: "tags/${{ github.ref_name }}"
+          regex: true
+          file: "*.yml"
+          token: ${{ secrets.TOKEN }}
       - name: Run Tests
         run: |
           set -e -x
@@ -144,7 +150,7 @@ jobs:
 
           kapp deploy -a kc -f https://github.com/vmware-tanzu/carvel-kapp-controller/releases/latest/download/release.yml -y
 
-          constraintVersion=""${{ github.ref_name }}""
+          constraintVersion="${{ github.ref_name }}"
           cat << EOF > pkgi.yml
           ---
           apiVersion: packaging.carvel.dev/v1alpha1
@@ -160,7 +166,7 @@ jobs:
                 constraints: "${constraintVersion:1}"
           EOF
 
-          kapp deploy -a sg -f pkgi.yml -y
+          kapp deploy -a sg -f package.yml -f metadata.yml -f pkgi.yml -y
 
           export SECRETGEN_E2E_NAMESPACE=secretgen-test
 
