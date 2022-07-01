@@ -144,6 +144,7 @@ jobs:
 
           kapp deploy -a kc -f https://github.com/vmware-tanzu/carvel-kapp-controller/releases/latest/download/release.yml -y
 
+          constraintVersion=""${{ github.ref_name }}""
           cat << EOF > pkgi.yml
           ---
           apiVersion: packaging.carvel.dev/v1alpha1
@@ -156,7 +157,7 @@ jobs:
               refName: secretgen-controller.carvel.dev
               apiVersion: packaging.carvel.dev/v1alpha1
               versionSelection:
-                constraints: "${{ github.ref_name }}"
+                constraints: "${constraintVersion:1}"
           EOF
 
           kapp deploy -a sg -f pkgi.yml -y
