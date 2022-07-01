@@ -156,7 +156,7 @@ jobs:
               refName: secretgen-controller.carvel.dev
               apiVersion: packaging.carvel.dev/v1alpha1
               versionSelection:
-                constraints: "${{ github.ref }}"
+                constraints: "${{ github.ref_name }}"
           EOF
 
           kapp deploy -a sg -f pkgi.yml -y
