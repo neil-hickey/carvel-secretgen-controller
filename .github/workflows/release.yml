@@ -6,7 +6,7 @@ on:
       - 'v*'
 
 jobs:
-  goreleaser:
+  draft-release:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -108,3 +108,56 @@ jobs:
           ${{steps.get-checksums-from-draft-release.outputs.result}}
           EOF
           )
+  validate-package-cr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.18
+      - name: Install Carvel Tools
+        uses: vmware-tanzu/carvel-setup-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          only: ytt, kapp, kbld, imgpkg
+          ytt: v0.40.1
+          kapp: v0.47.0
+          kbld: v0.33.0
+          imgpkg: v0.29.0
+      - name: Run Tests
+        run: |
+          set -e -x
+
+          mkdir /tmp/bin
+          export PATH=/tmp/bin:$PATH
+
+          minikube start --driver=docker --wait=all
+          docker buildx create minikube --use --driver=kubernetes --bootstrap
+
+          # deploy admin sa for secretgen-controller
+          kapp deploy -a rbac -f https://raw.githubusercontent.com/vmware-tanzu/carvel-kapp-controller/develop/examples/rbac/cluster-admin.yml -y
+
+          cat << EOF > pkgi.yml
+          ---
+          apiVersion: packaging.carvel.dev/v1alpha1
+          kind: PackageInstall
+          metadata:
+            name: secretgen-controller
+          spec:
+            serviceAccountName: cluster-admin-sa
+            packageRef:
+              refName: secretgen-controller.carvel.dev
+              apiVersion: packaging.carvel.dev/v1alpha1
+              versionSelection:
+                constraints: "${{ github.ref }}"
+          EOF
+
+          kapp deploy -a sg -f pkgi.yml -y
+
+          export SECRETGEN_E2E_NAMESPACE=secretgen-test
+
+          ./hack/test-all.sh
